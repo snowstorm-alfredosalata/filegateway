@@ -1,6 +1,5 @@
 from importlib.metadata import PackageNotFoundError, version 
 
-from .document import Document
 from .filesystem import Filesystem
 
 try:

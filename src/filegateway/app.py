@@ -1,56 +1,72 @@
-import base64
+import mimetypes
 from flask import Flask, request, jsonify
 
-from filegateway import Document, Filesystem
-
+from filegateway import Filesystem
 
 class FileGatewayApp(Flask):
+    """A Wrapper on a Flask App.
+    Currently adds no functionality, but it's been added for future integration.
+    """
     pass
 
 def setup_app() -> FileGatewayApp:
     app = FileGatewayApp(__name__)
 
-    @app.route('/api/v1/add_document', methods=['POST'])
+    # TODO: It'd be appropriate to Cache Filesystems, to make repeated use of the same filesystem more efficient.
+    # The performance impact of this has not been investigated yet though, and it's likely not to be substantial.
+
+    @app.route('/api/v1/add_document', methods=['JSON'])
     def add_document():
+        """Adds a document to a flysystem Filesystem.
+        
+        Takes:
+            A JSON HTTP request, with a correctly-formed JSON body.
+            
+        Returns:
+            Respones: An HTTP response detailing the request result.
+        """
         try:
-            json = request.json
-            fs_json, document_json = json["fs"], json["document"]
+            json: dict = request.json
+            fs_json, path, content = json.get("fs"), json.get("path"), json.get("content")
             
-            fs = Filesystem.from_json(fs_json)
-            document = Document.from_json(request.json)
+            assert fs_json, "Filesystem is mandatory!"
+            assert path, "Path is mandatory!"
+            assert content, "Content is mandatory!"
             
-            fs.
-            app.storage.add_or_edit(document)
+            fs: Filesystem = Filesystem.from_json(fs_json)
             
-            return jsonify({"status": "ok", "document_id": document.id})
+            fs.write(path, content)
+            
+            return jsonify({"status": "ok"})
             
         except Exception as e:
             return jsonify({"status": "error", "error_message": str(e)}), 400
 
-    @app.route('/api/v1/get_document', methods=['GET'])
+    @app.route('/api/v1/get_document', methods=['JSON'])
     def get_document():
-        document_id = request.args.get('id')
+        """Retrieves a document from a flysystem Filesystem.
         
-        if (document_id == None):
-            return jsonify({"error": "missing mandatory parameter document_id"}), 400
-        
-        document = app.storage.get(document_id)
-        if (document == None):
-            return jsonify({"error": "document not present in database"}), 404
-        
-        return base64.b64decode(document.content), 200, {'Content-Type': document.mime_type}
-
-    @app.route('/api/v1/get_document_metadata', methods=['GET'])
-    def get_document_metadata():
-        document_id = request.args.get('id')
-        
-        if (document_id == None):
-            return jsonify({"error": "missing mandatory parameter document_id"}), 400
-        
-        document = app.storage.get(document_id)
-        if (document == None):
-            return jsonify({"error": "document not present in database"}), 404
-        
-        return jsonify(document.get_metadata()), 200, {'Content-Type': document.mime_type}
+        Takes:
+            A JSON HTTP request, with a correctly-formed JSON body.
+            
+        Returns:
+            Respones: An HTTP response detailing the request result.
+        """
+        try:
+            json: dict = request.json
+            fs_json, path, content = json.get("fs"), json.get("path"), json.get("content")
+            
+            assert fs_json, "Filesystem is mandatory!"
+            assert path, "Path is mandatory!"
+            
+            fs: Filesystem = Filesystem.from_json(fs_json)
+            
+            content = fs.read(path)
+            mime_type = mimetypes.guess_type(path)[0] or "application/octet-stream"
+            
+            return content, 200, {'Content-Type': mime_type}
+            
+        except Exception as e:
+            return jsonify({"status": "error", "error_message": str(e)}), 400
     
     return app
