@@ -4,6 +4,15 @@ from flysystem.adapters import s3
 from marshmallow import Schema, fields, post_load, INCLUDE, EXCLUDE
 
 class S3FsSchema(Schema):
+    """Schema for accessing a S3 Filesystem
+
+    Args:
+        str: endpoint_url
+        str: access_key_id
+        str: secret_access_key
+        str: bucket_name
+        str: region_name
+    """
     class Meta:
         unknown = EXCLUDE
     
@@ -19,6 +28,11 @@ class S3FsSchema(Schema):
         return Filesystem(adapter)
 
 class FsSchema(Schema):
+    """Generic filesystem schema that maps itself to a specific schema.
+    
+    Implemented filesystems:
+        - s3: Amazon AWS S3
+    """
     class Meta:
         unknown = INCLUDE
     
@@ -49,8 +63,18 @@ class ReadDocumentApiSchema(Schema):
     def make_api_obj(self, data, **kwargs):
         return Api(**data)
 
+class ListContentsApiSchema(Schema):
+    path = fields.Str()
+    fs = fields.Nested(FsSchema, required=True)
+    
+    @post_load
+    def make_api_obj(self, data, **kwargs):
+        return Api(**data)
+
 class Api():
-    def __init__(self, path: str, fs: Filesystem, content = None):
+    """Generic data object valid for all Api Calls.
+    """
+    def __init__(self, fs: Filesystem, path: str = "/", content = None):
         self.path = path
         self.fs = fs
         self.content = content

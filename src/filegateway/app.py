@@ -1,7 +1,7 @@
 import mimetypes
 from flask import Flask, request, jsonify
 
-from filegateway.api import WriteDocumentApiSchema, ReadDocumentApiSchema, Api
+from filegateway.api import ListContentsApiSchema, WriteDocumentApiSchema, ReadDocumentApiSchema, Api
 
 class FileGatewayApp(Flask):
     """A Wrapper on a Flask App.
@@ -25,10 +25,11 @@ def setup_app() -> FileGatewayApp:
         """Adds a document to a flysystem Filesystem.
         
         Takes:
-            A JSON HTTP request, with a correctly-formed JSON body.
+            A JSON HTTP request, with a correctly-formed JSON body according to
+            `WriteDocumentApiSchema`
             
         Returns:
-            Respones: An HTTP response detailing the request result.
+            Responds: JSON "Ok" or a JSON error.
         """
         try:
             api: Api = write_document_api_schema.load(request.json)
@@ -47,10 +48,11 @@ def setup_app() -> FileGatewayApp:
         """Retrieves a document from a flysystem Filesystem.
         
         Takes:
-            A JSON HTTP request, with a correctly-formed JSON body.
+            A JSON HTTP request, with a correctly-formed JSON body according to
+            `ReadDocumentApiSchema`
             
         Returns:
-            Respones: An HTTP response detailing the request result.
+            Responds: The requested document or a JSON error.
         """
         try:
             api: Api = read_document_api_schema.load(request.json)
@@ -59,6 +61,28 @@ def setup_app() -> FileGatewayApp:
             mime_type = mimetypes.guess_type(api.path)[0] or "application/octet-stream"
             
             return content, 200, {'Content-Type': mime_type}
+            
+        except Exception as e:
+            return jsonify({"status": "error", "error_message": str(e)}), 400
+    
+    list_folders_api_schema = ListContentsApiSchema()
+    @app.route('/api/v1/list_contents', methods=['JSON'])
+    def list_contents():
+        """Retrieves a document from a flysystem Filesystem.
+        
+        Takes:
+            A JSON HTTP request, with a correctly-formed JSON body according to
+            `ListContentsApiSchema`
+            
+        Returns:
+            Responds: JSON-encoded list of folder contents or a JSON error.
+        """
+        try:
+            api: Api = list_folders_api_schema.load(request.json)
+            
+            contents = api.fs.list_contents(api.path)
+            
+            return jsonify({"status": "ok", "data": contents}), 200
             
         except Exception as e:
             return jsonify({"status": "error", "error_message": str(e)}), 400
