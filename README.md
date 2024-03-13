@@ -19,3 +19,9 @@ To build:
 
 ## Testing requests
 Run `example-request.js` with npm or `example-request.sh` with bash.
+
+## Running unit tests
+Simply run:
+```
+    pip3 install tox && tox
+```
