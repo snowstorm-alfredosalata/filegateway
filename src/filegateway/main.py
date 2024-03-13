@@ -5,6 +5,9 @@ __copyright__ = "snowstorm-alfredosalata"
 __license__ = "MIT"
 
 def main():
+    """
+    Constructs and runs a Filegateway webapp.
+    """
     app = setup_app()
     app.run()
     
