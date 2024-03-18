@@ -1,7 +1,7 @@
 # Filegateway
 
-Filegateway is a simple microservice leveraging Flysystem to provide API-based
-access to various file storages.
+A simple Microservice to store files on various filesystems with consistent RESTful APIs. 
+Powered by Flask & Flysystem.
 
 Currently only supports Amazon AWS S3.
 
