@@ -45,7 +45,7 @@ def setup_app() -> FileGatewayApp:
             return jsonify({"status": "ok"})
             
         except Exception as e:
-            app.logger.error(f'Error writing file {api.path} on file system {api.fs.adapter.__str__()}: {str(e)}')
+            app.logger.error(f'Error processing request: {str(e)}')
             return jsonify({"status": "error", "error_message": str(e)}), 400
 
 
@@ -71,7 +71,7 @@ def setup_app() -> FileGatewayApp:
             return content, 200, {'Content-Type': mime_type}
             
         except Exception as e:
-            app.logger.error(f'Error reading file {api.path} from file system {api.fs.adapter.__str__()}: {str(e)}')
+            app.logger.error(f'Error processing request: {str(e)}')
             return jsonify({"status": "error", "error_message": str(e)}), 400
     
     list_folders_api_schema = ListContentsApiSchema()
@@ -95,7 +95,7 @@ def setup_app() -> FileGatewayApp:
             return jsonify({"status": "ok", "data": contents}), 200
             
         except Exception as e:
-            app.logger.error(f'Error listing directory {api.path} on file system {api.fs.adapter.__str__()}: {str(e)}')
+            app.logger.error(f'Error processing request: {str(e)}')
             return jsonify({"status": "error", "error_message": str(e)}), 400
     
     return app
