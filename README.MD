@@ -23,7 +23,9 @@ To build:
 
 ```sh
 # Gunicorn workers should tipically be 2 * CPU
-cd ./docker && docker build -t local/filegateway . && docker run -p 8000:8000 -e GUNICORN_WORKERS=4 -d local/filegateway
+cd ./docker && \
+docker build -t local/filegateway . && \
+docker run -p 8000:8000 -v ~/.filegateway:/mnt/logs -e GUNICORN_WORKERS=4 -e GUNICORN_ACCESS_LOG_FILE=/mnt/logs/access.log -e GUNICORN_ACCESS_LOG_FILE=/mnt/logs/error.log -d local/filegateway
 ```
 
 **Warning:** building python package is mandatory before building the docker image, or it will fail.
