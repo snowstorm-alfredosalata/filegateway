@@ -1,8 +1,12 @@
 FROM python:3.12-alpine
 LABEL AUTHOR="as@salata.ovh"
 
-ENV GUNICORN_WORKERS 4
-ENV LANG C.UTF-8
+ENV \
+    GUNICORN_WORKERS 4 \
+    GUNICORN_ACCESS_LOG_FILE - \
+    GUNICORN_LOG_FILE - \
+    GUNICORN_LOG_LEVEL info \
+    LANG C.UTF-8
 
 RUN apk add git
 

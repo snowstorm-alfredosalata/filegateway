@@ -1,4 +1,5 @@
 import mimetypes
+import logging
 from flask import Flask, request, jsonify
 
 from filegateway.api import ListContentsApiSchema, WriteDocumentApiSchema, ReadDocumentApiSchema, Api
@@ -18,7 +19,11 @@ def setup_app() -> FileGatewayApp:
     # TODO: It'd be appropriate to Cache Filesystems, to make repeated use of the same filesystem more efficient.
     # The performance impact of this has not been investigated yet though, and it's likely not to be substantial.
 
-    
+    if __name__ != '__main__':
+        gunicorn_logger = logging.getLogger('gunicorn.error')
+        app.logger.handlers = gunicorn_logger.handlers
+        app.logger.setLevel(gunicorn_logger.level)
+        
     write_document_api_schema = WriteDocumentApiSchema()
     @app.route('/api/v1/write_document', methods=['JSON'])
     def write_document():
@@ -36,9 +41,11 @@ def setup_app() -> FileGatewayApp:
             
             api.fs.write(api.path, api.content)
             
+            app.logger.info(f'Wrote file {api.path} on file system {api.fs.adapter.__str__()}.')
             return jsonify({"status": "ok"})
             
         except Exception as e:
+            app.logger.error(f'Error writing file {api.path} on file system {api.fs.adapter.__str__()}: {str(e)}')
             return jsonify({"status": "error", "error_message": str(e)}), 400
 
 
@@ -60,9 +67,11 @@ def setup_app() -> FileGatewayApp:
             content = api.fs.read(api.path)
             mime_type = mimetypes.guess_type(api.path)[0] or "application/octet-stream"
             
+            app.logger.info(f'Serving file {api.path} from file system {api.fs.adapter.__str__()}.')
             return content, 200, {'Content-Type': mime_type}
             
         except Exception as e:
+            app.logger.error(f'Error reading file {api.path} from file system {api.fs.adapter.__str__()}: {str(e)}')
             return jsonify({"status": "error", "error_message": str(e)}), 400
     
     list_folders_api_schema = ListContentsApiSchema()
@@ -82,9 +91,11 @@ def setup_app() -> FileGatewayApp:
             
             contents = api.fs.list_contents(api.path)
             
+            app.logger.info(f'Listing directory {api.path} on file system {api.fs.adapter.__str__()}.')
             return jsonify({"status": "ok", "data": contents}), 200
             
         except Exception as e:
+            app.logger.error(f'Error listing directory {api.path} on file system {api.fs.adapter.__str__()}: {str(e)}')
             return jsonify({"status": "error", "error_message": str(e)}), 400
     
     return app
