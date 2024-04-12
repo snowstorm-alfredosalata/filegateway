@@ -25,7 +25,7 @@ def setup_app() -> FileGatewayApp:
         app.logger.setLevel(gunicorn_logger.level)
         
     write_document_api_schema = WriteDocumentApiSchema()
-    @app.route('/api/v1/write_document', methods=['JSON'])
+    @app.route('/write', methods=['POST'])
     def write_document():
         """Adds a document to a flysystem Filesystem.
         
@@ -51,7 +51,7 @@ def setup_app() -> FileGatewayApp:
 
 
     read_document_api_schema = ReadDocumentApiSchema()
-    @app.route('/api/v1/read_document', methods=['JSON'])
+    @app.route('/read', methods=['POST'])
     def read_document():
         """Retrieves a document from a flysystem Filesystem.
         
@@ -78,7 +78,7 @@ def setup_app() -> FileGatewayApp:
             return jsonify({"status": "error", "error_message": str(e)}), 400
     
     list_folders_api_schema = ListContentsApiSchema()
-    @app.route('/api/v1/list_contents', methods=['JSON'])
+    @app.route('/list', methods=['POST'])
     def list_contents():
         """Retrieves a document from a flysystem Filesystem.
         
