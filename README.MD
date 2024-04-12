@@ -1,5 +1,7 @@
 # FileGateway
 
+[![Conventional Commits](https://img.shields.io/badge/Conventional%20Commits-1.0.0-%23FE5196?logo=conventionalcommits&logoColor=white)](https://conventionalcommits.org)
+
 Filegateway is a Flask application for serving and uploading files from and to several targets, build upon PyFilesystem.
 Interacting with Filegateway is done through simple RESTful APIs.
 

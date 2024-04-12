@@ -12,5 +12,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Basic API to add or get documents and list objects in path
 - Local filesystem support
 - AWS S3 Filesystem support
-- Buildable docker image (`Dockerfile`) with developement Flask server
+- Docker image (`Dockerfile`) with development Flask server
 - Example requests for `nodejs` and `bash`
