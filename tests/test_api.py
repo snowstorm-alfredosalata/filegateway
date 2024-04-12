@@ -1,7 +1,6 @@
 import pytest
 from marshmallow import ValidationError
 
-from flysystem.adapters import s3
 from filegateway.api import ReadDocumentApiSchema, WriteDocumentApiSchema, FsSchema, Api
 
 __author__ = "snowstorm-alfredosalata"
@@ -24,7 +23,7 @@ def test_from_valid_json_succeeds():
         }
     }
     api: Api = WriteDocumentApiSchema().load(valid_api)
-    assert api.fs.adapter.__class__ == s3.S3FilesystemAdapter
+    assert type(api.fs).__name__ == "S3FS"
     
     valid_api = {
         "path": "some/path.txt",
@@ -38,7 +37,7 @@ def test_from_valid_json_succeeds():
         }
     }
     api: Api = ReadDocumentApiSchema().load(valid_api)
-    assert api.fs.adapter.__class__ == s3.S3FilesystemAdapter
+    assert type(api.fs).__name__ == "S3FS"
 
 def test_from_invalid_json_fails():
     invalid_json = {
