@@ -37,7 +37,7 @@ rl.on('close', async () =>  {
       content: "Ciao!"
   }
 
-  await fetch("http://127.0.0.1:8000/api/v1/write_document", {
+  await fetch("http://127.0.0.1:5000/api/v1/write_document", {
     "headers": { "Content-type": "application/json"  },
     "body": JSON.stringify(write_request),
     "method": "JSON"
@@ -59,7 +59,7 @@ rl.on('close', async () =>  {
       path: "saluti.txt"
   }
 
-  await fetch("http://127.0.0.1:8000/api/v1/read_document", {
+  await fetch("http://127.0.0.1:5000/api/v1/read_document", {
     "headers": { "Content-type": "application/json"  },
     "body": JSON.stringify(get_request),
     "method": "JSON"

@@ -39,9 +39,10 @@ def setup_app() -> FileGatewayApp:
         try:
             api: Api = write_document_api_schema.load(request.json)
             
-            api.fs.write(api.path, api.content)
+            with api.fs.open(api.path, 'wt') as file:
+                file.write(api.content)
             
-            app.logger.info(f'Wrote file {api.path} on file system {api.fs.adapter.__str__()}.')
+            app.logger.info(f'Wrote file {api.path} on file system {api.fs.__class__}.')
             return jsonify({"status": "ok"})
             
         except Exception as e:
@@ -64,10 +65,12 @@ def setup_app() -> FileGatewayApp:
         try:
             api: Api = read_document_api_schema.load(request.json)
             
-            content = api.fs.read(api.path)
+            with api.fs.open(api.path, 'rt') as file:
+                content = file.read(api.content)
+            
             mime_type = mimetypes.guess_type(api.path)[0] or "application/octet-stream"
             
-            app.logger.info(f'Serving file {api.path} from file system {api.fs.adapter.__str__()}.')
+            app.logger.info(f'Serving file {api.path} from file system {api.fs.__class__}.')
             return content, 200, {'Content-Type': mime_type}
             
         except Exception as e:
@@ -89,9 +92,9 @@ def setup_app() -> FileGatewayApp:
         try:
             api: Api = list_folders_api_schema.load(request.json)
             
-            contents = api.fs.list_contents(api.path)
+            contents = api.fs.listdir(api.path)
             
-            app.logger.info(f'Listing directory {api.path} on file system {api.fs.adapter.__str__()}.')
+            app.logger.info(f'Listing directory {api.path} on file system {api.fs.__class__}.')
             return jsonify({"status": "ok", "data": contents}), 200
             
         except Exception as e:

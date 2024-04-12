@@ -1,7 +1,10 @@
-from flysystem.filesystem import Filesystem
-from flysystem.adapters import s3
+from fs import osfs, base
+from fs_s3fs import S3FS
 
 from marshmallow import Schema, fields, post_load, INCLUDE, EXCLUDE
+
+# We can open this at startup and reuse it.
+LOCAL_FS = osfs.OSFS('~/.filegateway', True, 0o755)
 
 class S3FsSchema(Schema):
     """Schema for accessing a S3 Filesystem
@@ -24,8 +27,12 @@ class S3FsSchema(Schema):
     
     @post_load
     def make_s3_fs(self, data, **kwargs):
-        adapter = s3.S3FilesystemAdapter(**data)
-        return Filesystem(adapter)
+        return S3FS(
+            data["bucket_name"], 
+            aws_access_key_id=data["access_key_id"], 
+            aws_secret_access_key=data["secret_access_key"], 
+            region=data["region_name"], 
+            endpoint_url=data["endpoint_url"])
 
 class FsSchema(Schema):
     """Generic filesystem schema that maps itself to a specific schema.
@@ -41,6 +48,8 @@ class FsSchema(Schema):
     @post_load
     def make_specific(self, data, **kwargs):
         match data['fs']:
+            case 'osfs':
+                return LOCAL_FS
             case "s3":
                 return S3FsSchema().load(data)
             case _:
@@ -74,7 +83,11 @@ class ListContentsApiSchema(Schema):
 class Api():
     """Generic data object valid for all Api Calls.
     """
-    def __init__(self, fs: Filesystem, path: str = "/", content = None):
+    path: str
+    fs: base.FS
+    content: None | str
+
+    def __init__(self, fs: base.FS, path: str = "/", content = None):
         self.path = path
         self.fs = fs
         self.content = content
