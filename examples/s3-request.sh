@@ -17,8 +17,7 @@ write_request=$(cat <<EOF
         "bucket_name": "$bucket_name",
         "region_name": "$region_name"
     },
-    "content": "Ciao!",
-    "path": "saluti.txt"
+    "path": "/"
 }
 EOF
 )
@@ -35,7 +34,7 @@ get_request=$(cat <<EOF
         "bucket_name": "$bucket_name",
         "region_name": "$region_name"
     },
-    "path": "saluti.txt"
+    "path": "/"
 }
 EOF
 )
