@@ -53,5 +53,8 @@ MANIFEST
 .conda*/
 .python-version
 
+# Sphinx Build
+docs/build
+
 __pycache__
 .tox

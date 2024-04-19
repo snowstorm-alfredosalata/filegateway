@@ -5,8 +5,6 @@
 Filegateway is a Flask application for serving and uploading files from and to several targets, build upon PyFilesystem.
 Interacting with Filegateway is done through simple RESTful APIs.
 
-Currently only supports Amazon AWS S3.
-
 **Not yet suitable for production use.**
 
 ## Available APIs
@@ -21,13 +19,19 @@ For API Json schemas, please check `src/filegateway/api`
 
 Filegateway includes a Docker image Dockerfile.
 
-To build:
+To run:
 
 ```sh
-# Gunicorn workers should tipically be 2 * CPU
+# With preconfigured make command:
+make docker-up
+# or, with podman:
+make podman-up
+
+# Or you can run the commands yourself for fine-graining Gunicorn settings:
 cd ./docker && \
 docker build -t local/filegateway . && \
 docker run -p 8000:8000 -v ~/.filegateway:/mnt/logs:z -e GUNICORN_WORKERS=4 -e GUNICORN_ACCESS_LOG_FILE=/mnt/logs/access.log -e GUNICORN_LOG_FILE=/mnt/logs/error.log -e GUNICORN_LOG_LEVEL=info -d local/filegateway
+# Gunicorn workers should tipically be 2 * CPU cores
 ```
 
 **Warning:** building python package is mandatory before building the docker image, or it will fail.
@@ -37,6 +41,6 @@ Run `example-request.js` with npm or `example-request.sh` with bash.
 
 ## Running unit tests
 Simply run:
-```
-    pip3 install tox && tox
+```sh
+make test
 ```
