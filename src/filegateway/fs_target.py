@@ -3,6 +3,12 @@ import mimetypes
 from fs import base
 import base64
 
+from pathlib import Path
+
+def trim_filename(file_path):
+    path = Path(file_path)
+    return str(path.parent)
+
 class FsTarget():
     """Main helper and executor class on Filegateway. May target a directory or a 
     file to any local o remote filesystem.
@@ -28,7 +34,8 @@ class FsTarget():
         if self.content is None:
             raise ValueError("Cannot write an empty content!")
 
-        self.fs.writebytes(self.content)
+        self.fs.makedirs(trim_filename(self.path), 0o755)
+        self.fs.writebytes(self.path, self.content)
 
     def read(self) -> BytesIO:
         """Reads the file and returns a :class:`BytesIO` stream."""
