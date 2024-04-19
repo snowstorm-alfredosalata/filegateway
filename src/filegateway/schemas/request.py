@@ -18,7 +18,7 @@ class RequestSchema(Schema):
     fs = fields.Nested(FsSchema, required=True)
 
     path = fields.Str(required=True)
-    content = fields.Str(required=True)
+    content = fields.Str(required=False)
 
     @post_load
     def make_api_obj(self, data, **_kwargs):
