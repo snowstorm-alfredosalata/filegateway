@@ -16,10 +16,12 @@ def get_local_fs():
 
 class FsSchema(Schema):
     """Generic filesystem schema that maps itself to a specific schema.
-    
-    Implemented filesystems:
-        - os: Local Filesystem
-        - s3: Amazon AWS S3
+       
+    Args:
+        str: fs = [os|s3]
+            The target path. Might represent a file or a directory.
+            os: Local Filesystem. Takes no other param.
+            s3: Amazon AWS S3. See :class:`S3FsSchema`.
     """
     class Meta:
         unknown = INCLUDE

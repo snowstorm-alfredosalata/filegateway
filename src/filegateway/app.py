@@ -3,7 +3,7 @@ import logging
 from flask import Flask, request, jsonify, send_file
 import marshmallow
 
-from filegateway.schemas.api import RequestSchema
+from filegateway.schemas.request import RequestSchema
 from filegateway.fs_target import FsTarget
 
 class FileGatewayApp(Flask):
@@ -16,14 +16,17 @@ app = FileGatewayApp(__name__)
 
 @app.route('/write', methods=['POST'])
 def write_document():
-    """Adds a document to a flysystem Filesystem.
+    """Adds a document to a filesystem.
     
     Takes:
-        A JSON HTTP request, with a correctly-formed JSON body according to
-        :class:`WriteDocumentApiSchema`
+        A JSON body, formed according to
+        :class:`filegateway.schemas.request.RequestSchema`.
+
+        `content` key is mandatory and excepted to be a base64-encoded
+        file.
         
     Returns:
-        Responds: JSON "Ok" or a JSON error.
+        JSON-Encoded "Okay" or error.
     """
     file: FsTarget = api_schema.load(request.json)
     file.write()
@@ -31,32 +34,16 @@ def write_document():
     app.logger.info('Wrote file %s on file system %s.', file.path, file.get_fs_type())
     return jsonify({"status": "ok"})
 
-@app.route('/delete', methods=['POST'])
-def delete_document():
-    """Adds a document to a flysystem Filesystem.
-    
-    Takes:
-        A JSON HTTP request, with a correctly-formed JSON body according to
-        :class:`WriteDocumentApiSchema`
-        
-    Returns:
-        Responds: JSON "Ok" or a JSON error.
-    """
-    file: FsTarget = api_schema.load(request.json)
-    file.delete()
-
-    app.logger.info('Deleted file or folder %s on file system %s.', file.path, file.get_fs_type())
-    return jsonify({"status": "ok"})
-
 @app.route('/read', methods=['POST'])
 def read_document():
-    """Retrieves a document from a flysystem Filesystem.
+    """Retrieves a document from a filesystem.
     
     Takes:
-        A JSON HTTP request, with a correctly-formed JSON body according to
-        `ReadDocumentApiSchema`
+        A JSON body, formed according to
+        :class:`filegateway.schemas.request.RequestSchema`.
         
-    Returns: The requested document or a JSON-encoded error.
+    Returns:
+        JSON-Encoded "Okay" or error.
     """
     file: FsTarget = api_schema.load(request.json)
     content, mime = file.read(), file.guess_mime()
@@ -66,10 +53,14 @@ def read_document():
 
 @app.route('/list', methods=['POST'])
 def list_contents():
-    """
-    
+    """Lists the content in a filesystem path.
+
+    Takes:
+        A JSON body, formed according to
+        :class:`filegateway.schemas.request.RequestSchema`.
         
-    Returns: The requested document or a JSON-encoded error.
+    Returns:
+        JSON-Encoded "Okay" or error.
     """
     folder: FsTarget = api_schema.load(request.json)
     contents = folder.list_contents()
@@ -82,7 +73,7 @@ def setup_app() -> FileGatewayApp:
     """Returns the Flask App, attempting to bind gunicorn logger if existing.
 
     Returns:
-        FileGatewayApp: The Flask FileGateway App.
+        :class:`FileGatewayApp`: The Flask FileGateway App.
     """
 
     if __name__ != '__main__':
@@ -96,6 +87,16 @@ def setup_app() -> FileGatewayApp:
 @app.errorhandler(ValueError)
 @app.errorhandler(marshmallow.ValidationError)
 def handle_validation_errors(e: Exception):
+    """Catches ValueErrors and Marshmallow schema validation
+    errors and maps them to `Bad Request`s with a parseable JSON body.
+
+    Args:
+        Exception: e
+            The caught exception.
+
+    Returns:
+        JSON-Encoded error.
+    """
     app.logger.error('Malformed request. %s: %s', e.__class__, str(e))
     return jsonify({"status": "error", "error_message": str(e)}), 400
 
@@ -103,5 +104,14 @@ def handle_validation_errors(e: Exception):
 
 @app.errorhandler(Exception)
 def handle_errors(e):
+    """Catches any uncaught error and maps `Internal Server Error`s with a parseable JSON body.
+
+    Args:
+        Exception: e
+            The caught exception.
+
+    Returns:
+        JSON-Encoded error.
+    """
     app.logger.error('Error processing request: %s: %s', e.__class__, str(e))
     return jsonify({"status": "error", "error_message": str(e)}), 500

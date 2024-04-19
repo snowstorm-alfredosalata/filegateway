@@ -1,4 +1,4 @@
-from marshmallow import Schema, fields, post_load, EXCLUDE
+from marshmallow import Schema, fields, post_load
 from fs_s3fs import S3FS
 
 class S3FsSchema(Schema):
@@ -11,8 +11,8 @@ class S3FsSchema(Schema):
         str: bucket_name
         str: region_name
     """
-    class Meta:
-        unknown = EXCLUDE
+
+    fs = fields.Str(required=True) # always "s3"
     
     endpoint_url = fields.Str(required=True)
     access_key_id = fields.Str(required=True)

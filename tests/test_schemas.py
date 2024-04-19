@@ -1,7 +1,7 @@
 import pytest
 from marshmallow import ValidationError
 
-from filegateway.schemas.api import ReadDocumentApiSchema, WriteDocumentApiSchema, FsSchema, Api
+from filegateway.schemas.request import ReadDocumentApiSchema, WriteDocumentApiSchema, FsSchema, Api
 
 __author__ = "snowstorm-alfredosalata"
 __copyright__ = "snowstorm-alfredosalata"
