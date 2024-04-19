@@ -68,6 +68,39 @@ def list_contents():
     app.logger.info('Listing directory %s on file system %s.', folder.path, folder.get_fs_type())
     return jsonify({"status": "ok", "data": contents}), 200
 
+@app.errorhandler(ValueError)
+@app.errorhandler(marshmallow.ValidationError)
+def handle_validation_errors(e: Exception):
+    """Catches ValueErrors and Marshmallow schema validation
+    errors and maps them to `Bad Request`s with a parseable JSON body.
+
+    Args:
+        Exception: e
+            The caught exception.
+
+    Returns:
+        JSON-Encoded error.
+    """
+    error_type = e.__class__.__name__
+
+    app.logger.error('Malformed request. %s: %s', error_type, str(e))
+    return jsonify({"status": "error", "error_message": 'Malformed request. %s: %s' % (error_type, str(e))}), 400
+
+@app.errorhandler(Exception)
+def handle_errors(e):
+    """Catches any uncaught error and maps `Internal Server Error`s with a parseable JSON body.
+
+    Args:
+        Exception: e
+            The caught exception.
+
+    Returns:
+        JSON-Encoded error.
+    """
+    error_type = e.__class__.__name__
+
+    app.logger.error('Error processing request: %s: %s', error_type, str(e))
+    return jsonify({"status": "error", "error_message": 'Error processing request: %s: %s' % (error_type, str(e))}), 500
 
 def setup_app() -> FileGatewayApp:
     """Returns the Flask App, attempting to bind gunicorn logger if existing.
@@ -82,36 +115,3 @@ def setup_app() -> FileGatewayApp:
         app.logger.setLevel(gunicorn_logger.level)
 
     return app
-
-
-@app.errorhandler(ValueError)
-@app.errorhandler(marshmallow.ValidationError)
-def handle_validation_errors(e: Exception):
-    """Catches ValueErrors and Marshmallow schema validation
-    errors and maps them to `Bad Request`s with a parseable JSON body.
-
-    Args:
-        Exception: e
-            The caught exception.
-
-    Returns:
-        JSON-Encoded error.
-    """
-    app.logger.error('Malformed request. %s: %s', e.__class__, str(e))
-    return jsonify({"status": "error", "error_message": str(e)}), 400
-
-
-
-@app.errorhandler(Exception)
-def handle_errors(e):
-    """Catches any uncaught error and maps `Internal Server Error`s with a parseable JSON body.
-
-    Args:
-        Exception: e
-            The caught exception.
-
-    Returns:
-        JSON-Encoded error.
-    """
-    app.logger.error('Error processing request: %s: %s', e.__class__, str(e))
-    return jsonify({"status": "error", "error_message": str(e)}), 500
